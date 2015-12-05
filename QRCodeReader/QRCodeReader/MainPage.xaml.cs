@@ -1,31 +1,23 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading;
 using System.Threading.Tasks;
 using Windows.Devices.Enumeration;
 using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.Graphics.Display;
 using Windows.Graphics.Imaging;
 using Windows.Media;
 using Windows.Media.Capture;
 using Windows.Media.MediaProperties;
-using Windows.Storage;
 using Windows.System.Display;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Navigation;
 using ZXing;
+using Panel = Windows.Devices.Enumeration.Panel;
 
 // 空白ページのアイテム テンプレートについては、http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409 を参照してください
 
@@ -139,8 +131,6 @@ namespace QRCodeReader
             Debug.WriteLine("MediaCapture_Failed: (0x{0:X}) {1}", errorEventArgs.Code, errorEventArgs.Message);
 
             CleanupCameraAsync().FireAndForget();
-
-            Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => GetPreviewFrameButton.IsEnabled = isPreviewing).FireAndForget();
         }
 
         private async Task InitializeCameraAsync()
@@ -150,7 +140,7 @@ namespace QRCodeReader
             if (mediaCapture == null)
             {
                 // Attempt to get the back camera if one is available, but use any camera device if not
-                var cameraDevice = await FindCameraDeviceByPanelAsync(Windows.Devices.Enumeration.Panel.Back);
+                var cameraDevice = await FindCameraDeviceByPanelAsync(Panel.Back);
 
                 if (cameraDevice == null)
                 {
@@ -181,7 +171,7 @@ namespace QRCodeReader
                 if (isInitialized)
                 {
                     // Figure out where the camera is located
-                    if (cameraDevice.EnclosureLocation == null || cameraDevice.EnclosureLocation.Panel == Windows.Devices.Enumeration.Panel.Unknown)
+                    if (cameraDevice.EnclosureLocation == null || cameraDevice.EnclosureLocation.Panel == Panel.Unknown)
                     {
                         // No information on the location of the camera, assume it's an external camera, not integrated on the device
                         externalCamera = true;
@@ -192,7 +182,7 @@ namespace QRCodeReader
                         externalCamera = false;
 
                         // Only mirror the preview if the camera is on the front panel
-                        mirroringPreview = (cameraDevice.EnclosureLocation.Panel == Windows.Devices.Enumeration.Panel.Front);
+                        mirroringPreview = (cameraDevice.EnclosureLocation.Panel == Panel.Front);
                     }
 
                     await StartPreviewAsync();
@@ -229,7 +219,6 @@ namespace QRCodeReader
             }
 
             // Enable / disable the button depending on the preview state
-            GetPreviewFrameButton.IsEnabled = isPreviewing;
             timer = new Timer(_ =>
             {
                 TryDecodePreviewAsync().FireAndForget();
@@ -275,8 +264,6 @@ namespace QRCodeReader
 
                 // Allow the device to sleep now that the preview is stopped
                 displayRequest.RequestRelease();
-
-                GetPreviewFrameButton.IsEnabled = isPreviewing;
             });
         }
 
@@ -339,7 +326,7 @@ namespace QRCodeReader
             timer?.Dispose();
         }
 
-        private static async Task<DeviceInformation> FindCameraDeviceByPanelAsync(Windows.Devices.Enumeration.Panel desiredPanel)
+        private static async Task<DeviceInformation> FindCameraDeviceByPanelAsync(Panel desiredPanel)
         {
             // Get available devices for capturing pictures
             var allVideoDevices = await DeviceInformation.FindAllAsync(DeviceClass.VideoCapture);
