@@ -16,10 +16,7 @@
         <CaptureElement Name="PreviewControl" Stretch="Uniform" Grid.Column="0"/>
 
         <StackPanel Grid.Row="1">
-            <StackPanel Orientation="Horizontal">
-                <Button Name="GetPreviewFrameButton" Content="GetPreviewFrameAsync" Margin="10" IsEnabled="False"/>
-                <TextBlock Name="FrameInfoTextBlock" VerticalAlignment="Center"/>
-            </StackPanel>
+            <TextBlock Name="FrameInfoTextBlock" VerticalAlignment="Center"/>
             <TextBox x:Name="ResultText" IsReadOnly="True"/>
         </StackPanel>
     </Grid>
